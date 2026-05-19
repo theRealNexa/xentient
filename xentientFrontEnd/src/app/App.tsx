@@ -388,7 +388,7 @@ export default function App() {
       }
 
       const response = await fetch(
-        `http://127.0.0.1:5000/stock?symbol=${symbol}&range=${range}&interval=${interval}`
+        `https://xentient-backend.onrender.com/stock?symbol=${symbol}&range=${range}&interval=${interval}`
       );
       const data = await response.json();
       if (data.status === "success") {
