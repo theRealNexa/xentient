@@ -74,11 +74,11 @@ interface TimeframeConfig {
 }
 
 const TIMEFRAME_OPTIONS: Record<string, TimeframeConfig> = {
-  '1D': { label: 'Today', range: '1d', interval: '1m' },      // 1-minute bars (Your Default)
+  '1D': { label: 'Today', range: '1d', interval: '1m' },      // 1-minute bars (Default)
   '5D': { label: '5 Days', range: '5d', interval: '15m' },    // 15-minute bars
   '1W': { label: '1 Week', range: '7d', interval: '30m' },    // 30-minute bars
   '30D': { label: '30 Days', range: '30d', interval: '1h' },   // hourly bars
-  '6M': { label: '6 Months', range: '6mo', interval: '4h' },   // 4-hour bars
+  '6M': { label: '6 Months', range: '6mo', interval: '4h' },   // 4-hourly bars
   '1Y': { label: '1 Year', range: '1y', interval: '1d' },    // daily bars
 };
 
@@ -350,7 +350,7 @@ const assetSuggestions = [
   { symbol: 'USO', name: 'United States Oil Fund' }
 ];
 
-/*Number formatter for summarization */
+/*Number formatter for summarization(Volume) */
 const formatVolume = (num: number) => {
   if (!num || isNaN(num)) return "0";
   if (num >= 1e9) return (num / 1e9).toFixed(1) + 'B';
@@ -360,7 +360,7 @@ const formatVolume = (num: number) => {
 };
 
 export default function App() {
-  // 1. All necessary state variables
+  // All necessary state variables
   const [selectedTimeframe, setSelectedTimeframe] = useState<string>('1D');
   const [currentAsset, setCurrentAsset] = useState<string>('BTC-USD'); // Default initial asset match
   const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
@@ -377,8 +377,8 @@ export default function App() {
   const [cachedInsights, setCachedInsights] = useState<any[]>([]);
   const [lastInsightUpdate, setLastInsightUpdate] = useState<number>(0);
   
-  // 2. Updated data fetching accepting dynamic range & interval
-    //Also updated market insight analysis throttling logic based on time elapsed since last update and whether the fetch is a background tick or user-initiated
+  // Updated data fetching accepting dynamic range & interval
+    //Also updated market insight analysis throttling logic based on time-elapsed since last update and whether the fetch is a background tick or user-initiated
   const fetchStock = async (symbol: string, range: string = '1d', interval: string = '1m', isBackgroundTick: boolean = false) => {
     try {
       if (!isBackgroundTick) {
@@ -395,21 +395,21 @@ export default function App() {
         setStockData(data.chart_data);
         setCachedInsights(data.insights);    
       }
-      // 1. Always update live chart prices and header data instantly (every 10 seconds)
+      // Always update live chart prices and header data instantly (every 10 seconds)
       setStockData(data);
 
-      // 2. INSIGHT THROTTLING ENGINE
+      // INSIGHT THROTTLING ENGINE
       const currentTime = Date.now();
-      const threeMinutes = 3 * 60 * 1000; // 180,000 ms (Adjust to 5 * 60 * 1000 for 5 minutes)
+      const oneMinutes = 1 * 60 * 1000; // 180,000 ms (Adjust to 5 * 60 * 1000 for 5 minutes)
       const timeSinceLastUpdate = currentTime - lastInsightUpdate;
 
-      if (!isBackgroundTick || timeSinceLastUpdate >= threeMinutes || cachedInsights.length === 0) {
+      if (!isBackgroundTick || timeSinceLastUpdate >= oneMinutes || cachedInsights.length === 0) {
         console.log(`⏱️ Throttling Engine: Refreshing insights for ${symbol} (${range}/${interval})`);
         setCachedInsights(data.insights || []);
         setLastInsightUpdate(currentTime);
       } else {
         // Keep the current view completely locked to avoid visual layout thrashing
-        console.log(`🔒 Throttling Engine: Holding cached insights. Next update in ${Math.round((threeMinutes - timeSinceLastUpdate) / 1000)}s`);
+        console.log(`🔒 Throttling Engine: Holding cached insights. Next update in ${Math.round((oneMinutes - timeSinceLastUpdate) / 1000)}s`);
       }
 
       if (!isBackgroundTick) {
@@ -422,15 +422,15 @@ export default function App() {
     }
   };
 
-  // 3. Initial App Load (Fetches default BTC-USD on 1D / 1m interval)
-    // Live Trading Polling Loop Engine
+  // Initial App Load (Fetches default BTC-USD on 1D / 1m interval)
+  // Live Trading Polling Loop Engine
   useEffect(() => {
     // 1. Immediately fetch fresh data on mount or when asset/timeframe parameters change
     const activeConfig = TIMEFRAME_OPTIONS[selectedTimeframe];
     fetchStock(currentAsset, activeConfig.range, activeConfig.interval);
 
-    // 2. Set up a live interval loop to fetch data every 10 seconds (10000ms)
-    // Adjust this value based on your API limitations (e.g., 5000ms for 5 seconds)
+    // Live interval loop to fetch data every 10 seconds (10000ms)
+    // Value based on API limitations (e.g., 5000ms for 5 seconds)
     const liveIntervalId = setInterval(() => {
       console.log(`Live Ticker Ping: Refreshing data stream for ${currentAsset}...`);
       fetchStock(currentAsset, activeConfig.range, activeConfig.interval, true);
@@ -460,7 +460,7 @@ export default function App() {
           <div className="flex flex-col items-center justify-center gap-3">
             <BrainCircuit className="w-9 h-9 text-blue-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.4)]" />
 
-            {/* Removed -mt-2 so the text sits naturally and breathes */}
+            {/* Removed -mt-2 so the text sits naturally; well-gapped. */}
             <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-blue-500 to-cyan-400 bg-clip-text text-transparent">
               Xentient
             </h1>

@@ -21,7 +21,7 @@ def get_stock():
     try:
         stock = yf.Ticker(symbol)
         chart_data = stock.history(period=range_param, interval=interval_param)
-        # Fetch intraday metrics separately for the summary header panels
+        # Fetching intraday metrics separately for the summary header panels
         today_data = stock.history(period="1d", interval="1m")
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -84,10 +84,10 @@ def get_stock():
         # ====================================================================
         insights = []
         
-        # 1. Dynamically scale parameters based on the requested interval
+        # Dynamically scales parameters based on the requested interval
         is_macro = interval_param in ['1d', '5d', '1wk', '1mo']
         
-        # Sensitivity thresholds scale up for macro intervals to filter out noise
+        # Sensitivity thresholds scales up for macro intervals to filter out noise
         volatility_threshold_high = 5.0 if is_macro else 2.5
         volatility_threshold_low = 1.5 if is_macro else 0.5
         ma_percentage_band = 0.02 if is_macro else 0.005  # 2% deviation for daily bars vs 0.5% for minute bars
